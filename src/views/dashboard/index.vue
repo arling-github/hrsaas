@@ -1,6 +1,8 @@
 <template>
   <div class="dashboard-container">
+    <div> 主页 </div>
     <div class="dashboard-text">name: {{ name }}</div>
+    <button @click="this.$router.go(-1)">回退</button>
   </div>
 </template>
 

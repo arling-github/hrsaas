@@ -1,19 +1,27 @@
 <template>
   <div class="login-container">
-    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
-
+    <el-form
+      ref="loginForm"
+      :model="loginForm"
+      :rules="loginRules"
+      class="login-form"
+      auto-complete="on"
+      label-position="left"
+    >
       <div class="title-container">
-        <h3 class="title">Login Form</h3>
+        <h3 class="title">
+          <img src="@/assets/common/login-logo.png" alt="">
+        </h3>
       </div>
 
-      <el-form-item prop="username">
+      <el-form-item prop="mobile">
         <span class="svg-container">
           <svg-icon icon-class="user" />
         </span>
         <el-input
           ref="username"
-          v-model="loginForm.username"
-          placeholder="Username"
+          v-model="loginForm.mobile"
+          placeholder="请输您的手机号"
           name="username"
           type="text"
           tabindex="1"
@@ -30,56 +38,74 @@
           ref="password"
           v-model="loginForm.password"
           :type="passwordType"
-          placeholder="Password"
+          placeholder="请输入您的密码"
           name="password"
           tabindex="2"
           auto-complete="on"
           @keyup.enter.native="handleLogin"
         />
         <span class="show-pwd" @click="showPwd">
-          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
+          <svg-icon
+            :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'"
+          />
         </span>
       </el-form-item>
 
-      <el-button :loading="loading" type="primary" style="width:100%;margin-bottom:30px;" @click.native.prevent="handleLogin">Login</el-button>
+      <el-button
+        class="loginBtn"
+        :loading="loading"
+        type="primary"
+        style="width: 100%; margin-bottom: 30px"
+        @click.native.prevent="handleLogin"
+      >登录</el-button>
 
       <div class="tips">
-        <span style="margin-right:20px;">username: admin</span>
-        <span> password: any</span>
+        <span style="margin-right:20px;">账号: 13800000002</span>
+        <span> 密码: 123456</span>
       </div>
-
     </el-form>
   </div>
 </template>
 
 <script>
-import { validUsername } from '@/utils/validate'
+import { validateMobile } from '@/utils/validate'
+import Router from '@/router'
 
 export default {
   name: 'Login',
   data() {
-    const validateUsername = (rule, value, callback) => {
-      if (!validUsername(value)) {
-        callback(new Error('Please enter the correct user name'))
-      } else {
-        callback()
-      }
-    }
-    const validatePassword = (rule, value, callback) => {
-      if (value.length < 6) {
-        callback(new Error('The password can not be less than 6 digits'))
-      } else {
-        callback()
-      }
-    }
     return {
       loginForm: {
-        username: 'admin',
-        password: '111111'
+        mobile: '13800000002',
+        password: '123456'
       },
       loginRules: {
-        username: [{ required: true, trigger: 'blur', validator: validateUsername }],
-        password: [{ required: true, trigger: 'blur', validator: validatePassword }]
+        mobile: [
+          // 规则是链式执行的，如果第一个规则没有满足 不会执行第二个，只有满足了才会继续执行
+          { required: true, trigger: 'blur', message: '手机号不能为空' },
+          // 格式校验 1开头 11位的数字 第二位是3-9之间的数字  正则表达式/自定义校验函数
+          {
+            trigger: 'blur', // 触发模式同样是离开焦点
+            validator: function(rule, value, callback) {
+              // rule是规则 value是校验的当前的值 callback回调函数
+              // 如果校验成功 你必须执行callback
+              // 如果校验失败 你也必须执行callback callBack(传入一个错误对象)
+              // const isOK = validateMobile(value)
+              // if (isOK) {
+              //   callback()
+              // } else {
+              //   callback(new Error('您的手机号格式不正确'))
+              // }
+              validateMobile(value) ? callback() : callback(new Error('您的手机号格式不正确'))
+            }
+          }
+        ],
+        password: [
+          { required: true, trigger: 'blur', message: '密码不能为空' }, {
+            // 校验长度 min(最小或者最短) max(最大或者最长)
+            min: 6, max: 16, message: '密码的长度在6-16位之间', trigger: 'blur'
+          }
+        ]
       },
       loading: false,
       passwordType: 'password',
@@ -106,18 +132,23 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(valid => {
-        if (valid) {
-          this.loading = true
-          this.$store.dispatch('user/login', this.loginForm).then(() => {
-            this.$router.push({ path: this.redirect || '/' })
-            this.loading = false
-          }).catch(() => {
-            this.loading = false
-          })
-        } else {
-          console.log('error submit!!')
-          return false
+      this.$refs.loginForm.validate(async isOK => {
+        // 如果isOK为true表示 校验通过
+        if (isOK) {
+          try {
+            // this.loading = true
+            // 如果校验通过 调用action/接口
+            await this.$store.dispatch('user/login', this.loginForm)
+            // console.log(1)
+            // vuex中的action实际上是返回一个promise对象
+            // 只要认为走到了这里，就是登录成功了
+            Router.push('/') // 调到主页
+          } catch (error) {
+            console.log(error)
+          } finally {
+            // 不论走try还是catch 最终都会执行
+            // this.loading = false
+          }
         }
       })
     }
@@ -129,8 +160,8 @@ export default {
 /* 修复input 背景不协调 和光标变色 */
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
-$bg:#283443;
-$light_gray:#fff;
+$bg: #283443;
+$light_gray: #68b0fe;  // 将输入框颜色改成蓝色
 $cursor: #fff;
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
@@ -140,6 +171,10 @@ $cursor: #fff;
 }
 
 /* reset element-ui css */
+.login-container {
+  background-image: url('~@/assets/common/login.jpg'); // 设置背景图片
+  background-position: center; // 将图片位置设置为充满整个屏幕
+}
 .login-container {
   .el-input {
     display: inline-block;
@@ -163,19 +198,28 @@ $cursor: #fff;
     }
   }
 
-  .el-form-item {
+   .el-form-item {
     border: 1px solid rgba(255, 255, 255, 0.1);
-    background: rgba(0, 0, 0, 0.1);
+    background: rgba(255, 255, 255, 0.7); // 输入登录表单的背景色
     border-radius: 5px;
     color: #454545;
   }
+  .el-form-item__error {
+    color: #fff
+  }
+  .loginBtn {
+  background: #407ffe;
+  height: 64px;
+  line-height: 32px;
+  font-size: 24px;
+}
 }
 </style>
 
 <style lang="scss" scoped>
-$bg:#2d3a4b;
-$dark_gray:#889aa4;
-$light_gray:#eee;
+$bg: #2d3a4b;
+$dark_gray: #889aa4;
+$light_gray: #eee;
 
 .login-container {
   min-height: 100%;
