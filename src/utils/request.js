@@ -9,7 +9,7 @@ const TimeOut = 3000 // 定义一个超时时间
 // 如果执行 npm run build 值为 /prod-api  没关系  运维应该在上线的时候 给你配置上 /prod-api的代理
 const server = axios.create({
   //   axios的参数配置
-  baseURL: 'http://ihrm.itheima.net', // 取node的环境变量
+  baseURL: process.env.VUE_APP_BASE_API, // 取node的环境变量
   timeout: 5000 // 当吵过多少毫秒时 认定超时
 })
 // axios的请求拦截器

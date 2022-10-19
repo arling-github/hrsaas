@@ -53,6 +53,7 @@ export default {
 <style lang="scss" scoped>
   @import "~@/styles/mixin.scss";
   @import "~@/styles/variables.scss";
+  @import "~@/styles/sidebar.scss";
 
   .app-wrapper {
     @include clearfix;

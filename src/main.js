@@ -13,6 +13,7 @@ import store from './store'
 import router from './router'
 
 import '@/icons' // icon
+// 路由守卫
 import '@/permission' // permission control
 
 /**
