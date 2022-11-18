@@ -3,7 +3,7 @@ import { Message } from 'element-ui'
 import { getTimestamp } from '@/utils/auth'
 import store from '@/store'
 import router from '@/router'
-const TimeOut = 3000 // 定义一个超时时间
+const TimeOut = 3600 // 定义一个超时时间
 // 创建实例
 // 如果执行 npm run dev  值为 /api 正确  /api 这个代理只是给开发环境配置的代理
 // 如果执行 npm run build 值为 /prod-api  没关系  运维应该在上线的时候 给你配置上 /prod-api的代理
@@ -17,7 +17,7 @@ server.interceptors.request.use(config => {
   // 同学最容易犯的错误 是经常忘记 return config
   // 注入token
   if (store.getters.token) {
-    // 检查时间戳是否过期 认为登录时 存入时间戳
+    // 检查时间戳是否过期 认为登录时 存入时间戳 有token情况下才去检查检查token
     if (IsCheckTimeOut()) {
       //  如果为true 表示超时
       // 登出操作
@@ -30,7 +30,7 @@ server.interceptors.request.use(config => {
     // 判断有无token 有token的情况注入token
     config.headers.Authorization = `Bearer ${store.getters.token}`
   }
-  return config // 必须return
+  return config // 必须return 配置信息
 }, error => {
   // 说明请求之前错了
   return Promise.reject(error)
@@ -64,24 +64,27 @@ server.interceptors.response.use(response => {
     return Promise.reject(new Error(message))
   }
 }, error => {
+  console.log(error)
   // 执行失败
   //  判断独一无二的状态码
   // error对象里面 有 response参数
   if (error.response && error.response.data && error.response.data.code === 10002) {
-    // 认为后端接口通过检查告诉我们 token超时了
+    // 认为后端接口通过检查告诉我们 token超时了 被动token超时
     // 登出操作
-    store.dispatch('user/logout') // 登出 跳转
+    store.dispatch('user/logout') // 登出 跳转 删除token
     router.push('/login') // 调到登录页
   }
   // 在Vue项目中但凡用this的 都是在Vue组件中的
   Message.error(error.message) // 提示错误信息
   return Promise.reject(error) // 返回一个reject 参数为一个错误对象
 })
+// 检查时间有没有超时
 function IsCheckTimeOut() {
   // 判断是否超时
   // 当前时间-缓存的时间 是否大于3600秒
   var currentTime = Date.now()
   var timeStamp = getTimestamp()
+  // 时间戳是毫秒单位
   return (currentTime - timeStamp) / 1000 > TimeOut
 }
 // 暴露server

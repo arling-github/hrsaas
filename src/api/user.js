@@ -7,19 +7,16 @@ export function login2(data) {
     method: 'post'
   })
 }
-
 /**
  * 获取用户的基本资料
  * **/
-export function getUserProfile() {
+export function getUserInfo() {
   return request({
     url: '/sys/profile',
     method: 'post'
   })
 }
-
-/** *
- *
+/*
  * 获取用户的基本信息  现在写它 完全是为了显示头像
  * **/
 export function getUserDetailById(id) {
@@ -27,6 +24,3 @@ export function getUserDetailById(id) {
     url: `/sys/user/${id}`
   })
 }
-// export function logout() {
-
-// }

@@ -14,9 +14,9 @@
     <div class="right-menu">
       <el-dropdown class="avatar-container" trigger="click">
         <div class="avatar-wrapper">
-          <img src="@/assets/common/bigUserHeader.png" class="user-avatar" />
-          <span class="name">管理员</span>
-          <i class="el-icon-caret-bottom" style="color: #fff" />
+          <img :src="staffPhoto" class="user-avatar">
+          <span class="name">{{ name }}</span>
+          <i class="el-icon-caret-bottom" />
         </div>
         <el-dropdown-menu slot="dropdown" class="user-dropdown">
           <router-link to="/">
@@ -47,8 +47,13 @@ export default {
     // Breadcrumb,
     Hamburger
   },
+  data() {
+    return {
+      defaultImg: require('@/assets/common/head.jpg')
+    }
+  },
   computed: {
-    ...mapGetters(['sidebar', 'avatar'])
+    ...mapGetters(['sidebar', 'avatar', 'name', 'staffPhoto'])
   },
   methods: {
     toggleSideBar() {
@@ -153,18 +158,19 @@ export default {
           vertical-align: middle;
           margin-left: 5px;
         }
-        .user-dropdown {
-          color: #fff;
-        }
-
         .el-icon-caret-bottom {
           cursor: pointer;
           position: absolute;
           right: -20px;
           top: 25px;
           font-size: 12px;
+          color: #fff;
         }
       }
+      .user-dropdown {
+          color: #fff;
+      }
+
     }
   }
 }

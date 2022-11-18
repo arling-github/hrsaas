@@ -115,3 +115,19 @@ export function param2Obj(url) {
   })
   return obj
 }
+
+// 封装列表型数据转成树形数据 递归 自身调用自身 一定参数不能一样
+export function tranListToTreeData(list, rootValue) {
+  var arr = []
+  list.forEach(item => {
+    if (item.pid === rootValue) {
+      const children = tranListToTreeData(list, item.id)
+      if (children.length) {
+        // 如果长度大于0  说明有子节点
+        item.children = children
+      }
+      arr.push(item)
+    }
+  })
+  return arr
+}
