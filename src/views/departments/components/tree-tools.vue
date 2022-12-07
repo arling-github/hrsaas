@@ -62,6 +62,8 @@ export default {
         this.$emit('addDepts', this.treeNode) // 为何传出treeNode 因为是添加子部门 需要当前部门的数据
       } else if (type === 'edit') {
         // 编辑
+        // 给父组件传参 打开弹出框
+        this.$emit('editDepts', this.treeNode)
       } else {
         // 删除
         // 判断是否删除

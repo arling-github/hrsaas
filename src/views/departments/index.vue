@@ -1,5 +1,5 @@
 <template>
-  <div class="dashboard-container">
+  <div class="dashboard-container" v-loading="loading">
     <div class="app-container">
       <!-- 卡片布局 -->
       <el-card class="tree-card">
@@ -14,12 +14,12 @@
         >
           <!-- 插槽复制 -->
           <!-- 封装成组件了 调用组件-->
-          <tree-tools slot-scope="{ data }" :tree-node="data" style="height: 40px;width: 100%" @delDepts="getDepartments" @addDepts="addDepts" />
+          <tree-tools slot-scope="{ data }" :tree-node="data" style="height: 40px;width: 100%" @delDepts="getDepartments" @addDepts="addDepts" @editDepts="editDepts" />
         </el-tree>
       </el-card>
     </div>
     <!-- 弹出层 输入框 -->
-    <AddDept :show-dialog="showDialog" :tree-node="node" />
+    <AddDept ref="addDept" :show-dialog.sync="showDialog" :tree-node="node" @addDepts="getDepartments" />
   </div>
 </template>
 
@@ -102,7 +102,8 @@ export default {
       // 弹窗的显示控制变量
       showDialog: false,
       // 记录当前点击的node节点
-      node: null
+      node: null,
+      loading: false // 用来控制进度弹层的显示和隐藏
     }
   },
   // 钩子函数调用方法
@@ -111,16 +112,28 @@ export default {
   },
   methods: {
     async getDepartments() {
+      // 加载进度条
+      this.loading = true
       const result = await getDepartments()
       this.company = { name: result.companyName, manager: '负责人', id: '' }
       // 树形图封装成一个函数了
       this.departs = tranListToTreeData(result.depts, '') // 需要将其转化成树形结构
-      console.log(result)
+      this.loading = false
+      // console.log(result)
     },
     // 监听tree-tools触发添加的事件
     addDepts(node) {
       this.showDialog = true
       this.node = node
+    },
+    // 编辑的弹出方法
+    editDepts(node) {
+      this.showDialog = true
+      this.node = node
+      // 我们需要在这个位置 调用子组件的方法
+      // 父组件 调用子组件的方法
+      this.$refs.addDept.getDepartDetail(node.id)
+      // 直接调用子组件中的方法 传入一个id
     }
   }
 }

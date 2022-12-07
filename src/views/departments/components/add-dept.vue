@@ -1,10 +1,10 @@
 <!--封装一个弹出框组件 -->
 <template>
   <!-- 新增部门的弹层 -->
-  <el-dialog title="新增部门" :visible="showDialog">
+  <el-dialog :title="showTitle" :visible="showDialog" @close="btnCancel">
     <!-- 表单组件  el-form   label-width设置label的宽度   -->
     <!-- 匿名插槽 -->
-    <el-form label-width="120px" :model="formData" :rules="rules">
+    <el-form ref="deptForm" label-width="120px" :model="formData" :rules="rules">
       <el-form-item label="部门名称" prop="name">
         <el-input v-model="formData.name" style="width: 80%" placeholder="1-50个字符" />
       </el-form-item>
@@ -25,16 +25,17 @@
     <el-row slot="footer" type="flex" justify="center">
       <!-- 列被分为24 -->
       <el-col :span="6">
-        <el-button type="primary" size="small">确定</el-button>
-        <el-button size="small">取消</el-button>
+        <el-button type="primary" size="small" @click="btnOK">确定</el-button>
+        <el-button size="small" @click="btnCancel">取消</el-button>
       </el-col>
     </el-row>
   </el-dialog>
 </template>
 
 <script>
-import { getDepartments } from '@/api/departments'
-import { getEmployeeSimple } from '@/api/departments'
+import { getDepartments, addDepartments, getDepartDetail, updateDepartments } from '@/api/departments'
+import { getEmployeeSimple } from '@/api/employees'
+
 export default {
   // 需要传入一个props变量来控制 显示或者隐藏
   props: {
@@ -56,14 +57,29 @@ export default {
       const { depts } = await getDepartments()
       // depts是所有的部门数据
       // 如何去找技术部所有的子节点
-      const isRepeat = depts.filter((item) => item.pid === this.treeNode.id).some((item) => item.name === value)
+      let isRepeat
+      // 判断有没有id
+      if (this.formData.id) {
+        // 编辑模式的校验规则
+        isRepeat = depts.filter(item => item.id !== this.formData.id && item.pid === this.treeNode.pid).some(item => item.name === value)
+      } else {
+        // 新建模式的校验规则
+        isRepeat = depts.filter((item) => item.pid === this.treeNode.id).some((item) => item.name === value)
+      }
       isRepeat ? callback(new Error(`同级部门下已经有${value}的部门了`)) : callback()
     }
     // 检查编码重复
     const checkCodeRepeat = async(rule, value, callback) => {
       // 先要获取最新的组织架构数据
       const { depts } = await getDepartments()
-      const isRepeat = depts.some((item) => item.code === value && value) // 这里加一个 value不为空 因为我们的部门有可能没有code
+      let isRepeat
+      if (this.formData.id) {
+        // 编辑模式的校验规则
+        isRepeat = depts.some(item => item.id !== this.formData.id && item.code === value && value)
+      } else {
+        // 新建模式的校验规则
+        isRepeat = depts.some((item) => item.code === value && value) // 这里加一个 value不为空 因为我们的部门有可能没有code
+      }
       isRepeat ? callback(new Error(`组织架构中已经有部门使用${value}编码`)) : callback()
     }
     return {
@@ -107,13 +123,58 @@ export default {
           }
         ]
       },
-      // 用户变量
+      // 用户变量，将这个循环到下拉框
       peoples: []
+    }
+  },
+  computed: {
+    showTitle() {
+      return this.formData.id ? '编辑部门' : '新增部门'
     }
   },
   methods: {
     async getEmployeeSimple() {
       this.peoples = await getEmployeeSimple()
+    },
+    btnOK() {
+      this.$refs.deptForm.validate(async(isOk) => {
+        if (isOk) {
+          // 判断是编辑的确定还是新建的确定按钮
+          if (this.formData.id) {
+            // 编辑模式
+            await updateDepartments(this.formData)
+          } else {
+            // 新增模式
+            // 表示可以
+            // 调用添加接口
+            await addDepartments({ ...this.formData, pid: this.treeNode.id })
+            // 告诉父组件更新数据 ，自定义触发事件,然后父组件监听再更新数据
+          }
+
+          this.$emit('addDepts')
+          // 子组件 update:固定写法 (update:props名称, 值)
+          // this.$emit('update:showDialog', false) //触发事件
+          // 父组件 sync修饰符
+          // <child  :showDialog.sync="showDialog" />
+          this.$emit('update:showDialog', false)
+        }
+      })
+    },
+    // 取消按钮
+    btnCancel() {
+      // 重置属性 重置数据  因为resetFields 只能重置 表单上的数据 非表单上的 比如 编辑中id 不能重置
+      this.formData = {
+        name: '', // 部门名称
+        code: '', // 部门编码
+        manager: '', // 部门管理者
+        introduce: '' // 部门介绍
+      }
+      this.$refs.deptForm.resetFields() // 重置校验字段
+      this.$emit('update:showDialog', false) // 关闭
+    },
+    // 获取数据详情的方法
+    async getDepartDetail(id) {
+      this.formData = await getDepartDetail(id)
     }
   }
 }
