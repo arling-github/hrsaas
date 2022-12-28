@@ -11,6 +11,8 @@ import '@/styles/index.scss' // global css
 import App from './App'
 import store from './store'
 import router from './router'
+// 导入过滤器
+import * as filters from '@/filters'
 
 import '@/icons' // icon
 // 路由守卫
@@ -19,6 +21,13 @@ import '@/permission' // permission control
 
 // 引入页面共用
 import Component from '@/components'
+
+// 注册全局的过滤器
+Object.keys(filters).forEach(key => {
+  // 注册过滤器
+  Vue.filter(key, filters[key])
+})
+
 Vue.use(Component)
 /**
  * If you don't want to use mock-server
