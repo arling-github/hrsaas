@@ -1,6 +1,6 @@
 <template>
   <div class="dashboard-container">
-    <div> 主页 </div>
+    <div>主页</div>
     <div class="dashboard-text">name: {{ name }}</div>
     <page-tools :show-before="true">
       <template v-slot:before>
@@ -8,22 +8,25 @@
       </template>
       <el-button slot="after" type="primary">导入</el-button>
     </page-tools>
+    <div>
+      <upload-excel />
+    </div>
   </div>
 </template>
 
 <script>
 import { mapGetters } from 'vuex'
-import PageTools from '@/components/PageTools/index.vue'
+// 已经全局注册组件了
+// import PageTools from '@/components/PageTools/index.vue'
+// import UploadExcel from '@/components/UploadExcel/index.vue'
 
 export default {
   name: 'Dashboard',
   components: {
-    PageTools
+    // PageTools
   },
   computed: {
-    ...mapGetters([
-      'name'
-    ])
+    ...mapGetters(['name'])
   }
 }
 </script>

@@ -1,6 +1,6 @@
 <template>
   <!-- 共用弹出层 -->
-  <el-dialog title="新增员工" :visible="showDialog" @close="showDialogoff">
+  <el-dialog title="新增员工" :visible="showDialog" @close="btnCancel">
     <!-- 表单 -->
     <el-form ref="addEmployee" label-width="120px" :model="formData" :rules="rules">
       <el-form-item label="姓名" prop="username">
@@ -28,7 +28,7 @@
       </el-form-item>
       <el-form-item label="转正时间" prop="correctionTime">
         <!-- <el-input v-model="formData.correctionTime" style="width: 50%" placeholder="请选择转正时间" /> -->
-        <el-date-picker v-model="formData.timeOfEntry" style="width: 50%" placeholder="请选择入职时间" />
+        <el-date-picker v-model="formData.correctionTime" style="width: 50%" placeholder="请选择入职时间" />
       </el-form-item>
     </el-form>
     <!-- 表单确认按钮 -->
@@ -138,6 +138,8 @@ export default {
       }
       this.$refs.addEmployee.resetFields() // 重置校验结果
       this.$emit('update:showDialog', false)
+      // update:props 这样写的话可以直接父组件 处理
+      // this.$parent.showDialog = false
     }
   }
 }

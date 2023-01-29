@@ -10,7 +10,7 @@ const TimeOut = 3600 // 定义一个超时时间
 const server = axios.create({
   //   axios的参数配置
   baseURL: process.env.VUE_APP_BASE_API, // 取node的环境变量
-  timeout: 10000 // 当吵过多少毫秒时 认定超时
+  timeout: 100000 // 当吵过多少毫秒时 认定超时
 })
 // axios的请求拦截器
 server.interceptors.request.use(config => {

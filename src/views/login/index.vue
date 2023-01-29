@@ -1,16 +1,9 @@
 <template>
   <div class="login-container">
-    <el-form
-      ref="loginForm"
-      :model="loginForm"
-      :rules="loginRules"
-      class="login-form"
-      auto-complete="on"
-      label-position="left"
-    >
+    <el-form ref="loginForm" :model="loginForm" :rules="loginRules" class="login-form" auto-complete="on" label-position="left">
       <div class="title-container">
         <h3 class="title">
-          <img src="@/assets/common/login-logo.png" alt="">
+          <img src="@/assets/common/login-logo.png" alt="" />
         </h3>
       </div>
 
@@ -45,22 +38,14 @@
           @keyup.enter.native="handleLogin"
         />
         <span class="show-pwd" @click="showPwd">
-          <svg-icon
-            :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'"
-          />
+          <svg-icon :icon-class="passwordType === 'password' ? 'eye' : 'eye-open'" />
         </span>
       </el-form-item>
 
-      <el-button
-        class="loginBtn"
-        :loading="loading"
-        type="primary"
-        style="width: 100%; margin-bottom: 30px"
-        @click.native.prevent="handleLogin"
-      >登录</el-button>
+      <el-button class="loginBtn" :loading="loading" type="primary" style="width: 100%; margin-bottom: 30px" @click.native.prevent="handleLogin">登录</el-button>
 
       <div class="tips">
-        <span style="margin-right:20px;">账号: 13800000002</span>
+        <span style="margin-right: 20px">账号: 13800000002</span>
         <span> 密码: 123456</span>
       </div>
     </el-form>
@@ -101,9 +86,13 @@ export default {
           }
         ],
         password: [
-          { required: true, trigger: 'blur', message: '密码不能为空' }, {
+          { required: true, trigger: 'blur', message: '密码不能为空' },
+          {
             // 校验长度 min(最小或者最短) max(最大或者最长)
-            min: 6, max: 16, message: '密码的长度在6-16位之间', trigger: 'blur'
+            min: 6,
+            max: 16,
+            message: '密码的长度在6-16位之间',
+            trigger: 'blur'
           }
         ]
       },
@@ -132,7 +121,7 @@ export default {
       })
     },
     handleLogin() {
-      this.$refs.loginForm.validate(async isOK => {
+      this.$refs.loginForm.validate(async(isOK) => {
         // 如果isOK为true表示 校验通过
         if (isOK) {
           try {
@@ -161,7 +150,7 @@ export default {
 /* Detail see https://github.com/PanJiaChen/vue-element-admin/pull/927 */
 
 $bg: #283443;
-$light_gray: #68b0fe;  // 将输入框颜色改成蓝色
+$light_gray: #68b0fe; // 将输入框颜色改成蓝色
 $cursor: #fff;
 
 @supports (-webkit-mask: none) and (not (cater-color: $cursor)) {
@@ -198,21 +187,21 @@ $cursor: #fff;
     }
   }
 
-   .el-form-item {
+  .el-form-item {
     border: 1px solid rgba(255, 255, 255, 0.1);
     background: rgba(255, 255, 255, 0.7); // 输入登录表单的背景色
     border-radius: 5px;
     color: #454545;
   }
   .el-form-item__error {
-    color: #fff
+    color: #fff;
   }
   .loginBtn {
-  background: #407ffe;
-  height: 64px;
-  line-height: 32px;
-  font-size: 24px;
-}
+    background: #407ffe;
+    height: 64px;
+    line-height: 32px;
+    font-size: 24px;
+  }
 }
 </style>
 

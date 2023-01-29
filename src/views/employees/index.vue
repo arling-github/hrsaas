@@ -10,8 +10,8 @@
           <span>{{ page.total }}条记录</span>
         </template>
         <template v-slot:after>
-          <el-button size="small" type="success">excel导入</el-button>
-          <el-button size="small" type="danger">excel导出</el-button>
+          <el-button size="small" type="warning" @click="$router.push('import')">excel导入</el-button>
+          <el-button size="small" type="danger" @click="exportData">excel导出</el-button>
           <el-button size="small" type="primary" @click="showDialog = true">新增员工</el-button>
         </template>
       </page-tools>
@@ -59,9 +59,10 @@
 </template>
 
 <script>
-import { getEmployeeList, delEmployee, addEmployee } from '@/api/employees'
+import { getEmployeeList, delEmployee } from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees'
 import AddEmployee from './components/add-employee.vue'
+import { formatDate } from '@/filters'
 export default {
   components: { AddEmployee },
   data() {
@@ -76,6 +77,7 @@ export default {
         total: 0
       },
       showDialog: false
+      // 表头
     }
   },
   created() {
@@ -110,6 +112,70 @@ export default {
       } catch (error) {
         console.log(error)
       }
+    },
+    // 导出方法
+    exportData() {
+      // 表头对应关系
+      const headers = {
+        姓名: 'username',
+        手机号: 'mobile',
+        入职日期: 'timeOfEntry',
+        聘用形式: 'formOfEmployment',
+        转正日期: 'correctionTime',
+        工号: 'workNumber',
+        部门: 'departmentName'
+      }
+      import('@/vendor/Export2Excel').then(async(excel) => {
+        // 调用接口将数据转成一页
+        const { rows } = await getEmployeeList({ page: 1, size: this.page.total })
+        // 数据类型转化
+        const data = this.formatJson(headers, rows)
+        // 复杂表头
+        const multiHeader = [['姓名', '主要信息', '', '', '', '', '部门']]
+        const merges = ['A1:A2', 'B1:F1', 'G1:G2']
+        excel.export_json_to_excel({
+          header: Object.keys(headers), // 表头 必填
+          data: data, // 具体数据 必填
+          filename: '员工信息表', // 非必填
+          autoWidth: true, // 非必填
+          bookType: 'xlsx', // 非必填
+          multiHeader,
+          merges
+        })
+      })
+    },
+    // formatJson(headers, rows) {
+    //   return rows.map((item) => {
+    //     return Object.keys(headers).map((key) => {
+    //       if (headers[key] === 'timeOfEntry' || headers[key] === 'correctionTime') {
+    //         return formatDate(item[headers[key]]) // 返回格式化之前的时间
+    //       } else if (headers[key] === 'formOfEmployment') {
+    //         var en = EmployeeEnum.hireType.find((obj) => obj.id === item[headers[key]])
+    //         return en ? en.value : '未知'
+    //       }
+    //       return item[headers[key]]
+    //     })
+    //   })
+    // },
+    formatJson(headers, rows) {
+      return rows.map((item) => {
+        // item是一个对象  { mobile: 132111,username: '张三'  }
+        // ["手机号", "姓名", "入职日期" 。。]
+        return Object.keys(headers).map((key) => {
+          // 需要判断 字段
+          if (headers[key] === 'timeOfEntry' || headers[key] === 'correctionTime') {
+            // 格式化日期
+            return formatDate(item[headers[key]])
+          } else if (headers[key] === 'formOfEmployment') {
+            const obj = EmployeeEnum.hireType.find((obj) => obj.id === item[headers[key]])
+            return obj ? obj.value : '未知'
+          }
+          return item[headers[key]]
+        })
+        // ["132", '张三’， ‘’，‘’，‘’d]
+      })
+      // return rows.map(item => Object.keys(headers).map(key => item[headers[key]]))
+      // 需要处理时间格式问题
     }
   }
 }
